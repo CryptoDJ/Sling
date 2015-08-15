@@ -1,0 +1,4 @@
+#ifndef SLINGWEBBRIDGE_H
+#define SLINGWEBBRIDGE_H
+
+#endif // SLINGWEBBRIDGE_H

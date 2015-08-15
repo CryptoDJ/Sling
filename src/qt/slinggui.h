@@ -7,19 +7,22 @@
 
 #include <stdint.h>
 
+#include <QWebView>
+#include <QWebElement>
+
 class TransactionTableModel;
 class ClientModel;
 class WalletModel;
 class TransactionView;
-class OverviewPage;
-class AddressBookPage;
-class SendCoinsDialog;
+//class OverviewPage;
+//class AddressBookPage;
+//class SendCoinsDialog;
 class SignVerifyMessageDialog;
 class Notificator;
 class RPCConsole;
 class MasternodeManager;
 class RichListPage;
-class MessagePage;
+//class MessagePage;
 class MessageModel;
 class SlingRoad;
 class BuysPage;
@@ -79,15 +82,15 @@ private:
 
     QWidget *overviewWidget;
     QScrollArea *overviewScroll;
-    OverviewPage *overviewPage;
+    //OverviewPage *overviewPage;
     QWidget *transactionsPage;
-    AddressBookPage *addressBookPage;
-    AddressBookPage *receiveCoinsPage;
-    SendCoinsDialog *sendCoinsPage;
+    //AddressBookPage *addressBookPage;
+    //AddressBookPage *receiveCoinsPage;
+    //SendCoinsDialog *sendCoinsPage;
     SignVerifyMessageDialog *signVerifyMessageDialog;
     MasternodeManager *masternodeManagerPage;
     RichListPage *richListPage;
-    MessagePage *messagePage;
+    //MessagePage *messagePage;
     SlingRoad *slingRoad;
     BuysPage *buysPage;
     SellsPage *sellsPage;
@@ -132,6 +135,11 @@ private:
     QAction *slingRoadAction;
     QAction *buysPageAction;
     QAction *sellsPageAction;
+
+    /*HTML5 UI*/
+    QWebView *webView;
+    QWebFrame *documentFrame;
+    /*End HTML5 UI*/
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
@@ -195,7 +203,7 @@ private slots:
     virtual void updateTimer_timeout();
     void bittrexReplyFinished();
     /** Switch to overview (home) page */
-    void gotoOverviewPage();
+    //void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to address book page */

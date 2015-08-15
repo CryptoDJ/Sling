@@ -1,0 +1,43 @@
+<div id="sidebar-wrap" ng-controller="NavCtrl">
+  <accordion close-others="oneAtTime" slimscroll="{height: '100%'}">
+
+    <accordion-group is-open="status.isFirstOpen" ng-class="{'open': status.isFirstOpen, 'closed': !status.isFirstOpen}">
+        
+      <ul id="navigation" nav-collapse ripple>
+        <li ui-sref-active="active"><a ui-sref="app.dashboard"><fa name="home"></fa> <span>{{ 'Menu.OVERVIEW' | translate }}</span></a></li>
+        <li ui-sref-active="active" ng-class="{'open':$state.includes('app.mail')}">
+          <a ui-sref="app.mail"><fa name="send"></fa> <span>{{ 'Menu.SEND' | translate }}</span> <!--span class="badge bg-lightred">6</span--></a>
+        </li>
+        <li ui-sref-active="active" ng-class="{'open':$state.includes('app.mail')}">
+          <a ui-sref="app.mail"><fa name="plus"></fa> <span>{{ 'Menu.RECEIVE' | translate }}</span> <!--span class="badge bg-lightred">6</span--></a>
+        </li>
+        <li ui-sref-active="active" ng-class="{'open':$state.includes('app.forms')}">
+          <a ui-sref="app.forms"><fa name="list"></fa> <span>{{ 'Menu.TRANSACTIONS' | translate }}</span></a>
+        </li>
+         <li ui-sref-active="active" ng-class="{'open':$state.includes('app.shop')}">
+          <a ui-sref="app.shop"><fa name="cart-arrow-down"></fa> <span>{{ 'Menu.MARKET' | translate }}</span></a>
+          <!-- 
+          <ul>
+            <li ui-sref-active="active"><a ui-sref="app.shop.orders"><fa name="caret-right"></fa> {{ 'Menu.ORDERS' | translate }}</a></li>
+            <li ui-sref-active="active"><a ui-sref="app.shop.single-order"><fa name="caret-right"></fa> {{ 'Menu.SINGLE_ORDER' | translate }}</a></li>
+            <li ui-sref-active="active"><a ui-sref="app.shop.products"><fa name="caret-right"></fa> {{ 'Menu.PRODUCTS' | translate }}</a></li>
+            <li ui-sref-active="active"><a ui-sref="app.shop.single-product"><fa name="caret-right"></fa> {{ 'Menu.SINGLE_PRODUCT' | translate }}</a></li>
+            <li ui-sref-active="active"><a ui-sref="app.shop.invoices"><fa name="caret-right"></fa> {{ 'Menu.INVOICES' | translate }}</a></li>
+            <li ui-sref-active="active"><a ui-sref="app.shop.single-invoice"><fa name="caret-right"></fa> {{ 'Menu.SINGLE_INVOICE' | translate }}</a></li>
+          </ul>
+          -->
+        </li>
+        <li ui-sref-active="active" ng-class="{'open':$state.includes('app.tables')}">
+          <a ui-sref="app.tables"><fa name="comments"></fa> <span>{{ 'Menu.CHAT' | translate }}</span></a>
+        </li>
+        <li ui-sref-active="active" ng-class="{'open':$state.includes('app.pages')}">
+          <a ui-sref="app.pages"><fa name="desktop"></fa> <span>{{ 'Menu.MASTERNODES' | translate }}</span></a>
+        </li>
+        <li ui-sref-active="active" ng-class="{'open':$state.includes('app.layouts')}">
+          <a ui-sref="app.layouts"><fa name="cubes"></fa> <span>{{ 'Menu.BLOCKEXPLORER' | translate }}</span></a>
+        </li>
+      </ul>
+        
+    </accordion-group>
+  </accordion>
+</div>

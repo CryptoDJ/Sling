@@ -1,0 +1,29 @@
+[{
+  "id": 0,
+  "name": "Wood Walton",
+  "avatar": "images/random-avatar1.5c5e2735.jpg",
+  "content": "Commodo sunt minim incid id unt ipsum dolore veniam nulla Lorem reprehenderit officia. Ut esse cillum quis deserunt.",
+  "date": "16:54, 24.11.2014",
+  "unread": true,
+  "new_messages": 2,
+  "active": true
+},{
+  "id": 1,
+  "name": "Lorraine Mclaughlin",
+  "avatar": "images/random-avatar2.35045c15.jpg",
+  "content": "Sit nulla sint ex exercitation culpa anim aliquip. Incidid unt magna magna aute adipisicing incidid unt ullamco sint velit quis irure cillum.",
+  "date": "15:29, 24.11.2014",
+  "unread": false,
+  "new_messages": 0,
+  "active": false
+},{
+  "id": 2,
+  "name": "Cooley Pruitt",
+  "avatar": "images/random-avatar3.afcdc148.jpg",
+  "content": "Cillum pariatur ex ut Lorem deserunt laborum sunt duis. Et minim exercitation consequat ex sint dolore.",
+  "date": "14:18, 24.11.2014",
+  "unread": true,
+  "new_messages": 1,
+  "active": false
+}]
+

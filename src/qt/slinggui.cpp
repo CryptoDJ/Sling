@@ -11,7 +11,7 @@
 
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
-#include "sendcoinsdialog.h"
+//#include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
 #include "aboutdialog.h"
@@ -22,7 +22,7 @@
 #include "transactiondescdialog.h"
 #include "addresstablemodel.h"
 #include "transactionview.h"
-#include "overviewpage.h"
+//#include "overviewpage.h"
 #include "bitcoinunits.h"
 #include "guiconstants.h"
 #include "askpassphrasedialog.h"
@@ -79,6 +79,9 @@
 #include <QtScript/QScriptValue>
 #include <QtScript/QScriptValueIterator>
 #include <QTimer>
+#include <QWebElementCollection>
+#include <QWebFrame>
+#include <QWebInspector>
 
 #include <iostream>
 
@@ -103,7 +106,22 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     prevBlocks(0),
     nWeight(0)
 {
-    resize(720, 405);
+    /*HTML5 UI*/
+    webView = new QWebView();
+
+    webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+
+    webView->page()->action(QWebPage::Reload )->setVisible(false);
+    webView->page()->action(QWebPage::Back   )->setVisible(false);
+    webView->page()->action(QWebPage::Forward)->setVisible(false);
+
+    connect(webView, SIGNAL(linkClicked(const QUrl&)), this, SLOT(urlClicked(const QUrl&)));
+
+    setCentralWidget(webView);
+    /*END HTML5 UI*/
+
+    resize(1280, 720);
+
     setWindowTitle(tr("Sling") + " - " + tr("Wallet"));
 #ifndef Q_OS_MAC
     qApp->setWindowIcon(QIcon(":icons/bitcoin"));
@@ -129,60 +147,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Create the tray icon (or setup the dock icon)
     createTrayIcon();
 
-    // Create tabs
-    overviewPage = new OverviewPage();
-   
-    transactionsPage = new QWidget(this);
-    QVBoxLayout *vbox = new QVBoxLayout();
-    transactionView = new TransactionView(this);
-    vbox->addWidget(transactionView);
-    transactionsPage->setLayout(vbox);
-
-    addressBookPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::SendingTab);
-
-    receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
-
-    sendCoinsPage = new SendCoinsDialog(this);
-
     signVerifyMessageDialog = new SignVerifyMessageDialog(this);
 
-    masternodeManagerPage = new MasternodeManager(this);
-
-    richListPage = new RichListPage(this);
-    messagePage = new MessagePage(this);
-
-    slingRoad = new SlingRoad(this);
-    buysPage = new BuysPage(this);
-    sellsPage = new SellsPage(this);
-    
-    centralStackedWidget = new QStackedWidget(this);
-    centralStackedWidget->setContentsMargins(0, 0, 0, 0);
-    centralStackedWidget->addWidget(overviewPage);
-    //centralStackedWidget->addWidget(overviewWidget);
-    centralStackedWidget->addWidget(transactionsPage);
-    centralStackedWidget->addWidget(addressBookPage);
-    centralStackedWidget->addWidget(receiveCoinsPage);
-    centralStackedWidget->addWidget(sendCoinsPage);
-    centralStackedWidget->addWidget(masternodeManagerPage);
-    centralStackedWidget->addWidget(richListPage);
-    centralStackedWidget->addWidget(messagePage);
-    centralStackedWidget->addWidget(slingRoad);
-    centralStackedWidget->addWidget(buysPage);
-    centralStackedWidget->addWidget(sellsPage);
-
-    QWidget *centralWidget = new QWidget();
-    QVBoxLayout *centralLayout = new QVBoxLayout(centralWidget);
-    centralLayout->setContentsMargins(0,0,0,0);
-    centralWidget->setContentsMargins(0,0,0,0);
-    centralLayout->addWidget(centralStackedWidget);
-
-    setCentralWidget(centralWidget);
-
-    // Create status bar
-    statusBar();
-
-    // Disable size grip because it looks ugly and nobody needs it
-    statusBar()->setSizeGripEnabled(false);
+    labelPrice = new QLabel();
+    labelPrice->setObjectName("labelPrice");
+    labelPrice->setStyleSheet("#labelPrice { color: #ffffff; }");
+    labelPrice->setText("Bittrex: 0.00000000 BTC/SLING");
 
     // Status bar notification icons
     QWidget *frameBlocks = new QWidget();
@@ -197,11 +167,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     labelStakingIcon = new QLabel();
     labelConnectionsIcon = new QLabel();
     labelBlocksIcon = new QLabel();
-
-    labelPrice = new QLabel();
-    labelPrice->setObjectName("labelPrice");
-    labelPrice->setStyleSheet("#labelPrice { color: #ffffff; }");
-    labelPrice->setText("Bittrex: 0.00000000 BTC/SLING");
 
 #ifdef USE_NATIVE_I2P
     labelI2PConnections = new QLabel();
@@ -228,7 +193,55 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     frameBlocksLayout->addWidget(netLabel);
 
     frameBlocksLayout->addStretch();
-    
+
+
+    // Create tabs
+    //overviewPage = new OverviewPage();
+   
+    //transactionsPage = new QWidget(this);
+    //QVBoxLayout *vbox = new QVBoxLayout();
+    //transactionView = new TransactionView(this);
+    //vbox->addWidget(transactionView);
+    //transactionsPage->setLayout(vbox);
+
+    //addressBookPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::SendingTab);
+
+    //receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
+
+    //sendCoinsPage = new SendCoinsDialog(this);
+
+    //masternodeManagerPage = new MasternodeManager(this);
+
+    //richListPage = new RichListPage(this);
+    //messagePage = new MessagePage(this);
+
+    //slingRoad = new SlingRoad(this);
+    //buysPage = new BuysPage(this);
+    //sellsPage = new SellsPage(this);
+    /*
+    centralStackedWidget = new QStackedWidget(this);
+    centralStackedWidget->setContentsMargins(0, 0, 0, 0);
+    //centralStackedWidget->addWidget(overviewPage);
+    //centralStackedWidget->addWidget(overviewWidget);
+    centralStackedWidget->addWidget(transactionsPage);
+    centralStackedWidget->addWidget(addressBookPage);
+    centralStackedWidget->addWidget(receiveCoinsPage);
+    centralStackedWidget->addWidget(sendCoinsPage);
+    centralStackedWidget->addWidget(masternodeManagerPage);
+    centralStackedWidget->addWidget(richListPage);
+    centralStackedWidget->addWidget(messagePage);
+    centralStackedWidget->addWidget(slingRoad);
+    centralStackedWidget->addWidget(buysPage);
+    centralStackedWidget->addWidget(sellsPage);
+
+    QWidget *centralWidget = new QWidget();
+    QVBoxLayout *centralLayout = new QVBoxLayout(centralWidget);
+    centralLayout->setContentsMargins(0,0,0,0);
+    centralWidget->setContentsMargins(0,0,0,0);
+    centralLayout->addWidget(centralStackedWidget);
+
+    setCentralWidget(centralWidget);
+    */
 
     if (GetBoolArg("-staking", true))
     {
@@ -237,6 +250,11 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
         timerStakingIcon->start(30 * 1000);
         updateStakingIcon();
     }
+
+    // Create status bar
+    statusBar();
+    // Disable size grip because it looks ugly and nobody needs it
+    statusBar()->setSizeGripEnabled(false);
 
     // Progress bar and label for blocks download
     progressBarLabel = new QLabel();
@@ -267,29 +285,52 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     syncIconMovie = new QMovie(fUseBlackTheme ? ":/movies/update_spinner_black" : ":/movies/update_spinner", "mng", this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
-    connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));
-    connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
+    //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));
+    //connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
 
     // Double-clicking on a transaction on the transaction history page shows details
-    connect(transactionView, SIGNAL(doubleClicked(QModelIndex)), transactionView, SLOT(showDetails()));
+    //connect(transactionView, SIGNAL(doubleClicked(QModelIndex)), transactionView, SLOT(showDetails()));
 
     rpcConsole = new RPCConsole(this);
     connect(openRPCConsoleAction, SIGNAL(triggered()), rpcConsole, SLOT(show()));
-    // prevents an oben debug window from becoming stuck/unusable on client shutdown
+    // prevents an open debug window from becoming stuck/unusable on client shutdown
     connect(quitAction, SIGNAL(triggered()), rpcConsole, SLOT(hide()));
 
     // Clicking on "Verify Message" in the address book sends you to the verify message tab
-    connect(addressBookPage, SIGNAL(verifyMessage(QString)), this, SLOT(gotoVerifyMessageTab(QString)));
+    //connect(addressBookPage, SIGNAL(verifyMessage(QString)), this, SLOT(gotoVerifyMessageTab(QString)));
     // Clicking on "Sign Message" in the receive coins page sends you to the sign message tab
-    connect(receiveCoinsPage, SIGNAL(signMessage(QString)), this, SLOT(gotoSignMessageTab(QString)));
+    //connect(receiveCoinsPage, SIGNAL(signMessage(QString)), this, SLOT(gotoSignMessageTab(QString)));
 
-    gotoOverviewPage();
+    //gotoOverviewPage();
 
     networkManager = new QNetworkAccessManager(this);
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateTimer_timeout()));
     updateTimer.setInterval(1800000); // every half hour
     updateTimer.start();
     updateTimer_timeout();
+
+    /*HTML5 UI*/
+    documentFrame = webView->page()->mainFrame();
+
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+
+    //connect(webView->page()->action(QWebPage::Reload), SIGNAL(triggered()), SLOT(pageLoaded(bool)));
+
+    connect(webView, SIGNAL(loadFinished(bool)),                    SLOT(pageLoaded(bool)));
+    connect(documentFrame, SIGNAL(javaScriptWindowObjectCleared()), SLOT(addJavascriptObjects()));
+    connect(documentFrame, SIGNAL(urlChanged(QUrl)),                SLOT(urlClicked(const QUrl&)));
+
+    #ifdef Q_OS_WIN
+        QFile html("C:/sling/index.html");
+    #else
+        QFile html("/opt/sling/index.html");
+    #endif
+
+    if(html.exists())
+        webView->setUrl(QUrl("file:///" + html.fileName()));
+    else
+        webView->setUrl(QUrl("qrc:///src/qt/res/index.html"));
+     /*END HTML5 UI*/
 }
 
 BitcoinGUI::~BitcoinGUI()
@@ -345,7 +386,7 @@ void BitcoinGUI::bittrexReplyFinished()
         if(last > 0)
         {
 	    lastPrice = last;
-	    slingRoad->lastPrice = last;
+        //slingRoad->lastPrice = last;
 	    labelPrice->setText("Bittrex: " + QString::number(last, 'f', 8) + " BTC/SLING");
         }
 	uiInterface.NotifyLastPriceUpdated();
@@ -417,27 +458,27 @@ void BitcoinGUI::createActions()
     tabGroup->addAction(messageAction);
 
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
-    connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
-    connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
-    connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
-    connect(addressBookAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
-    connect(masternodeManagerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(masternodeManagerAction, SIGNAL(triggered()), this, SLOT(gotoMasternodeManagerPage()));
-    connect(richListPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(richListPageAction, SIGNAL(triggered()), this, SLOT(gotoRichListPage()));
-    connect(messageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(messageAction, SIGNAL(triggered()), this, SLOT(gotoMessagePage()));
-    connect(slingRoadAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(slingRoadAction, SIGNAL(triggered()), this, SLOT(gotoSlingRoad()));
-    connect(buysPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(buysPageAction, SIGNAL(triggered()), this, SLOT(gotoBuysPage()));
-    connect(sellsPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(sellsPageAction, SIGNAL(triggered()), this, SLOT(gotoSellsPage()));
+    //connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
+    //connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(receiveCoinsAction, SIGNAL(triggered()), this, SLOT(gotoReceiveCoinsPage()));
+    //connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(sendCoinsAction, SIGNAL(triggered()), this, SLOT(gotoSendCoinsPage()));
+    //connect(historyAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(historyAction, SIGNAL(triggered()), this, SLOT(gotoHistoryPage()));
+    //connect(addressBookAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
+    //connect(masternodeManagerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(masternodeManagerAction, SIGNAL(triggered()), this, SLOT(gotoMasternodeManagerPage()));
+    //connect(richListPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(richListPageAction, SIGNAL(triggered()), this, SLOT(gotoRichListPage()));
+    //connect(messageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(messageAction, SIGNAL(triggered()), this, SLOT(gotoMessagePage()));
+    //connect(slingRoadAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(slingRoadAction, SIGNAL(triggered()), this, SLOT(gotoSlingRoad()));
+    //connect(buysPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(buysPageAction, SIGNAL(triggered()), this, SLOT(gotoBuysPage()));
+    //connect(sellsPageAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    //connect(sellsPageAction, SIGNAL(triggered()), this, SLOT(gotoSellsPage()));
 
     quitAction = new QAction(tr("E&xit"), this);
     quitAction->setToolTip(tr("Quit application"));
@@ -517,6 +558,7 @@ void BitcoinGUI::createMenuBar()
     help->addAction(aboutQtAction);
 }
 
+/*
 static QWidget* makeToolBarSpacer()
 {
     QWidget* spacer = new QWidget();
@@ -524,6 +566,7 @@ static QWidget* makeToolBarSpacer()
     spacer->setStyleSheet("QWidget { background: none; }");
     return spacer;
 }
+*/
 
 void BitcoinGUI::createToolBars()
 {
@@ -634,10 +677,10 @@ void BitcoinGUI::setClientModel(ClientModel *clientModel)
         // Receive and report messages from network/worker thread
         connect(clientModel, SIGNAL(message(QString,QString,bool,unsigned int)), this, SLOT(message(QString,QString,bool,unsigned int)));
 
-        overviewPage->setClientModel(clientModel);
+        //overviewPage->setClientModel(clientModel);
         rpcConsole->setClientModel(clientModel);
-        addressBookPage->setOptionsModel(clientModel->getOptionsModel());
-        receiveCoinsPage->setOptionsModel(clientModel->getOptionsModel());
+        //addressBookPage->setOptionsModel(clientModel->getOptionsModel());
+        //receiveCoinsPage->setOptionsModel(clientModel->getOptionsModel());
     }
 }
 
@@ -650,11 +693,11 @@ void BitcoinGUI::setWalletModel(WalletModel *walletModel)
         connect(walletModel, SIGNAL(message(QString,QString,bool,unsigned int)), this, SLOT(message(QString,QString,bool,unsigned int)));
 
         // Put transaction list in tabs
-        transactionView->setModel(walletModel);
-        overviewPage->setWalletModel(walletModel);
-        addressBookPage->setModel(walletModel->getAddressTableModel());
-        receiveCoinsPage->setModel(walletModel->getAddressTableModel());
-        sendCoinsPage->setModel(walletModel);
+        //transactionView->setModel(walletModel);
+        //overviewPage->setWalletModel(walletModel);
+        //addressBookPage->setModel(walletModel->getAddressTableModel());
+        //receiveCoinsPage->setModel(walletModel->getAddressTableModel());
+        //sendCoinsPage->setModel(walletModel);
         signVerifyMessageDialog->setModel(walletModel);
 
         setEncryptionStatus(walletModel->getEncryptionStatus());
@@ -669,6 +712,7 @@ void BitcoinGUI::setWalletModel(WalletModel *walletModel)
     }
 }
 
+
 void BitcoinGUI::setMessageModel(MessageModel *messageModel)
 {
     this->messageModel = messageModel;
@@ -678,13 +722,14 @@ void BitcoinGUI::setMessageModel(MessageModel *messageModel)
         connect(messageModel, SIGNAL(error(QString,QString,bool)), this, SLOT(error(QString,QString,bool)));
 
         // Put transaction list in tabs
-        messagePage->setModel(messageModel);
+        //messagePage->setModel(messageModel);
 
         // Balloon pop-up for new message
         connect(messageModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(incomingMessage(QModelIndex,int,int)));
     }
 }
+
 
 void BitcoinGUI::createTrayIcon()
 {
@@ -811,7 +856,7 @@ void BitcoinGUI::setNumBlocks(int count)
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
         labelBlocksIcon->setPixmap(QIcon(fUseBlackTheme ? ":/icons/black/synced" : ":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
-        overviewPage->showOutOfSyncWarning(false);
+        //overviewPage->showOutOfSyncWarning(false);
 
         progressBarLabel->setVisible(false);
         progressBar->setVisible(false);
@@ -856,7 +901,7 @@ void BitcoinGUI::setNumBlocks(int count)
             syncIconMovie->jumpToNextFrame();
         prevBlocks = count;
 
-        overviewPage->showOutOfSyncWarning(true);
+        //overviewPage->showOutOfSyncWarning(true);
 
         tooltip += QString("<br>");
         tooltip += tr("Last received block was generated %1 ago.").arg(timeBehindText);
@@ -1091,16 +1136,18 @@ void BitcoinGUI::gotoRichListPage()
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
 
+/*
 void BitcoinGUI::gotoOverviewPage()
 {
     overviewAction->setChecked(true);
 
     //clearWidgets();
-    centralStackedWidget->setCurrentWidget(overviewPage);
+    //centralStackedWidget->setCurrentWidget(overviewPage);
 
     exportAction->setEnabled(false);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
+*/
 
 void BitcoinGUI::gotoHistoryPage()
 {
@@ -1134,11 +1181,11 @@ void BitcoinGUI::gotoAddressBookPage()
     // Clicking on "Verify Message" in the address book sends you to the verify message tab
     //connect(addressBookPage, SIGNAL(verifyMessage(QString)), this, SLOT(gotoVerifyMessageTab(QString)));
     //centralStackedWidget->addWidget(addressBookPage);
-    centralStackedWidget->setCurrentWidget(addressBookPage);
+    //centralStackedWidget->setCurrentWidget(addressBookPage);
 
     exportAction->setEnabled(true);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
-    connect(exportAction, SIGNAL(triggered()), addressBookPage, SLOT(exportClicked()));
+    //connect(exportAction, SIGNAL(triggered()), addressBookPage, SLOT(exportClicked()));
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()
@@ -1151,11 +1198,11 @@ void BitcoinGUI::gotoReceiveCoinsPage()
     // Clicking on "Sign Message" in the receive coins page sends you to the sign message tab
     //connect(receiveCoinsPage, SIGNAL(signMessage(QString)), this, SLOT(gotoSignMessageTab(QString)));
     //centralStackedWidget->addWidget(receiveCoinsPage);
-    centralStackedWidget->setCurrentWidget(receiveCoinsPage);
+    //centralStackedWidget->setCurrentWidget(receiveCoinsPage);
 
     exportAction->setEnabled(true);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
-    connect(exportAction, SIGNAL(triggered()), receiveCoinsPage, SLOT(exportClicked()));
+    //connect(exportAction, SIGNAL(triggered()), receiveCoinsPage, SLOT(exportClicked()));
 }
 
 void BitcoinGUI::gotoSendCoinsPage()
@@ -1163,7 +1210,7 @@ void BitcoinGUI::gotoSendCoinsPage()
     sendCoinsAction->setChecked(true);
     //sendCoinsPage = new SendCoinsDialog(this);
     //centralStackedWidget->addWidget(sendCoinsPage);
-    centralStackedWidget->setCurrentWidget(sendCoinsPage);
+    //centralStackedWidget->setCurrentWidget(sendCoinsPage);
     //sendCoinsPage->setModel(this->walletModel);
 
     exportAction->setEnabled(false);
@@ -1191,11 +1238,11 @@ void BitcoinGUI::gotoVerifyMessageTab(QString addr)
 void BitcoinGUI::gotoMessagePage()
 {
     messageAction->setChecked(true);
-    centralStackedWidget->setCurrentWidget(messagePage);
+    //centralStackedWidget->setCurrentWidget(messagePage);
 
     exportAction->setEnabled(true);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
-    connect(exportAction, SIGNAL(triggered()), messagePage, SLOT(exportClicked()));
+    //connect(exportAction, SIGNAL(triggered()), messagePage, SLOT(exportClicked()));
 }
 
 void BitcoinGUI::dragEnterEvent(QDragEnterEvent *event)
@@ -1211,12 +1258,13 @@ void BitcoinGUI::dropEvent(QDropEvent *event)
     {
         int nValidUrisFound = 0;
         QList<QUrl> uris = event->mimeData()->urls();
+        /*
         foreach(const QUrl &uri, uris)
         {
             if (sendCoinsPage->handleURI(uri.toString()))
                 nValidUrisFound++;
         }
-
+        */
         // if valid URIs were found
         if (nValidUrisFound)
             gotoSendCoinsPage();
@@ -1230,6 +1278,7 @@ void BitcoinGUI::dropEvent(QDropEvent *event)
 void BitcoinGUI::handleURI(QString strURI)
 {
     // URI has to be valid
+    /*
     if (sendCoinsPage->handleURI(strURI))
     {
         showNormalIfMinimized();
@@ -1237,6 +1286,7 @@ void BitcoinGUI::handleURI(QString strURI)
     }
     else
         notificator->notify(Notificator::Warning, tr("URI handling"), tr("URI can not be parsed! This can be caused by an invalid Sling address or malformed URI parameters."));
+    */
 }
 
 void BitcoinGUI::setEncryptionStatus(int status)

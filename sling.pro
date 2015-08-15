@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = sling
+TARGET = sling-qt
 VERSION = 1.4.3.7
 INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor
 QT += network printsupport script gui

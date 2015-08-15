@@ -2,7 +2,7 @@
 var overviewPage = {
     init: function() {
         this.balance = $(".balance"),
-        this.shadowBal = $("#shadowBal"),
+        this.slingBal = $("#slingBal"),
         this.reserved = $("#reserved"),
         this.stake = $("#stake"),
         this.unconfirmed = $("#unconfirmed"),
@@ -11,7 +11,7 @@ var overviewPage = {
 
         // Announcement feed
         $.ajax({
-            url:"http://ajax.googleapis.com/ajax/services/feed/load?v=2.0\&q=http://shadowhangout.com/category/18.rss",
+            url:"",
             dataType: 'jsonp'
         }).success(function(rss) {
             rss.responseData.feed.entries = rss.responseData.feed.entries.sort(function(a,b){

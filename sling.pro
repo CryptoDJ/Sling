@@ -1,8 +1,8 @@
 TEMPLATE = app
-TARGET = sling-qt
-VERSION = 1.3.3.7
+TARGET = sling
+VERSION = 1.4.3.7
 INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor
-QT += network printsupport script
+QT += network printsupport script gui
 DEFINES += ENABLE_WALLET
 DEFINES += BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE USE_NATIVE_I2P
 CONFIG += no_include_pwd
@@ -17,6 +17,10 @@ linux {
     SECP256K1_LIB_PATH = /usr/local/lib
     SECP256K1_INCLUDE_PATH = /usr/local/include
 }
+
+QT += widgets webkitwidgets
+
+RESOURCES += src/qt/res/sling.qrc
 
 # for boost 1.37, add -mt to the boost libraries
 # use: qmake BOOST_LIB_SUFFIX=-mt
@@ -99,7 +103,10 @@ QMAKE_CXXFLAGS *= -DUSE_SECP256K1
 
 INCLUDEPATH += src/leveldb/include src/leveldb/helpers
 LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a
-SOURCES += src/txdb-leveldb.cpp
+SOURCES += src/txdb-leveldb.cpp \
+    src/qt/sling.cpp \
+    src/qt/slinggui.cpp \
+    src/qt/slingwebbridge.cpp
 !win32 {
     # we use QMAKE_CXXFLAGS_RELEASE even without RELEASE=1 because we use RELEASE to indicate linking preferences not -O preferences
     genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
@@ -155,7 +162,7 @@ QMAKE_CXXFLAGS_WARN_ON = -fdiagnostics-show-option -Wall -Wextra -Wno-ignored-qu
 
 # Input
 DEPENDPATH += src src/json src/qt
-HEADERS += src/qt/bitcoingui.h \
+HEADERS += \
     src/qt/transactiontablemodel.h \
     src/qt/addresstablemodel.h \
     src/qt/optionsdialog.h \
@@ -219,14 +226,12 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/bitcoinamountfield.h \
     src/wallet.h \
     src/keystore.h \
-    src/qt/transactionfilterproxy.h \
     src/qt/transactionview.h \
     src/qt/walletmodel.h \
     src/rpcclient.h \
     src/rpcprotocol.h \
     src/rpcserver.h \
     src/timedata.h \
-    src/qt/overviewpage.h \
     src/qt/csvmodelwriter.h \
     src/crypter.h \
     src/qt/sendcoinsentry.h \
@@ -283,9 +288,11 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/createmarketlistingdialog.h \
     src/qt/marketlistingdetailsdialog.h \
     src/qt/deliverydetailsdialog.h \
-    src/market.h
+    src/market.h \
+    src/qt/slinggui.h \
+    src/qt/slingwebbridge.h
 
-SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
+SOURCES += \
     src/qt/transactiontablemodel.cpp \
     src/qt/addresstablemodel.cpp \
     src/qt/optionsdialog.cpp \
@@ -330,7 +337,6 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/bitcoinamountfield.cpp \
     src/wallet.cpp \
     src/keystore.cpp \
-    src/qt/transactionfilterproxy.cpp \
     src/qt/transactionview.cpp \
     src/qt/walletmodel.cpp \
     src/rpcclient.cpp \
@@ -344,7 +350,6 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/rpcblockchain.cpp \
     src/rpcrawtransaction.cpp \
     src/timedata.cpp \
-    src/qt/overviewpage.cpp \
     src/qt/csvmodelwriter.cpp \
     src/crypter.cpp \
     src/qt/sendcoinsentry.cpp \
@@ -406,8 +411,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/market.cpp
 
 
-RESOURCES += \
-    src/qt/bitcoin.qrc
+#RESOURCES += src/qt/sling.qrc
 
 FORMS += \
     src/qt/forms/coincontroldialog.ui \
@@ -481,7 +485,8 @@ QMAKE_EXTRA_COMPILERS += TSQM
 
 # "Other files" to show in Qt Creator
 OTHER_FILES += \
-    doc/*.rst doc/*.txt doc/README README.md res/bitcoin-qt.rc
+    doc/*.rst doc/*.txt doc/README README.md res/bitcoin-qt.rc \
+    COPYING
 
 # platform specific defaults, if not overridden on command line
 isEmpty(BOOST_LIB_SUFFIX) {
